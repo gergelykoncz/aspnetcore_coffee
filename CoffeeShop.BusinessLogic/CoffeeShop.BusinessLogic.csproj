@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="GeoCoordinate" Version="2.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CoffeeShop.BusinessEntity\CoffeeShop.BusinessEntity.csproj" />
+    <ProjectReference Include="..\CoffeeShop.DataAccess\CoffeeShop.DataAccess.csproj" />
+  </ItemGroup>
+
+</Project>
