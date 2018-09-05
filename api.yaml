@@ -1,0 +1,544 @@
+swagger: "2.0"
+info:
+  description: "API server for Railway Coffee"
+  version: "1.0.0"
+  title: "Railway Coffee API"
+  contact:
+    email: "gergo.koncz@gmail.com"
+  license:
+    name: "Apache 2.0"
+    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+
+basePath: "/v1"
+tags:
+- name: "coffee"
+  description: "CRUD endpoints for managing the coffee selection"
+- name: "order"
+  description: "Endpoints for submitting and processing orders"
+- name: "user"
+  description: "Endpoints for user management"
+schemes:
+- "https"
+paths:
+  /coffee:
+    get:
+      tags:
+      - "coffee"
+      summary: "Find all coffees"
+      description: "Returns all coffees"
+      operationId: "getAllCoffees"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/Coffee"
+  
+    post:
+      tags:
+      - "coffee"
+      summary: "Create a new coffee"
+      description: ""
+      operationId: "addCoffee"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Coffee object that needs to be added to the store"
+        required: true
+        schema:
+          $ref: "#/definitions/Coffee"
+      responses:
+        405:
+          description: "Invalid input"
+      security:
+      - api_key: []
+
+  /coffee/{coffeeId}:
+    get:
+      tags:
+      - "coffee"
+      summary: "Find coffee by ID"
+      description: "Returns a single coffee"
+      operationId: "getCoffeeById"
+      parameters:
+      - name: "coffeeId"
+        in: "path"
+        description: "ID of coffee to return"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "successful operation"
+          schema: 
+            $ref: "#/definitions/Coffee"
+        400:
+          description: "Invalid ID supplied"
+        404:
+          description: "Coffee not found"
+  
+    put:
+      tags:
+      - "coffee"
+      summary: "Update an existing coffee"
+      description: ""
+      operationId: "updatePet"
+      parameters:
+      - name: "coffeeId"
+        in: "path"
+        description: "ID of coffee to return"
+        required: true
+        type: "integer"
+        format: "int64"
+      - in: "body"
+        name: "body"
+        description: "Coffee object that needs to be added to the store"
+        required: true
+        schema:
+          $ref: "#/definitions/Coffee"
+      responses:
+        400:
+          description: "Invalid ID supplied"
+        404:
+          description: "Coffee not found"
+        405:
+          description: "Validation exception"
+      security:
+      - api_key: []
+  
+    delete:
+      tags:
+      - "coffee"
+      summary: "Deletes a coffee"
+      description: ""
+      operationId: "deleteCoffee"
+      parameters:
+      - name: "api_key"
+        in: "header"
+        required: false
+        type: "string"
+      - name: "coffeeId"
+        in: "path"
+        description: "Coffee id to delete"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        400:
+          description: "Invalid ID supplied"
+        404:
+          description: "Coffee not found"
+      security:
+      - api_key: []
+        
+  /order/:
+    get:
+      tags:
+      - "order"
+      summary: "Returns the order history"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/Order"
+      security:
+      - api_key: []
+    post:
+      tags:
+      - "order"
+      summary: "Sends a new order to the coffee shop"
+      responses:
+        200:
+          description: "successful operation"
+      parameters: 
+      - name: "body"
+        in: "body"
+        required: true
+        schema:
+          $ref: "#/definitions/Order"
+      security:
+      - api_key: []
+      
+  /order/calculateEta:
+    post:
+      tags:
+      - "order"
+      summary: "Calculates an ETA based on the current position"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: "object"
+            properties:
+              eta:
+                type: "number"
+      parameters: 
+      - name: "coordinates"
+        in: "body"
+        schema:
+          type: "object"
+          required:
+            - latitude
+            - longitude
+          properties:
+            latitude:
+              type: "number"
+            longitude:
+              type: "number"
+      security:
+      - api_key: []
+      
+  /order/updateState:
+    post:
+      tags:
+      - "order"
+      summary: "Updates an order to a new state"
+      responses:
+        200:
+          description: "successful operation"
+        400:
+          description: "order already finished"
+      parameters: 
+      - name: "orderId"
+        in: "body"
+        schema:
+          type: "object"
+          required:
+            - orderId
+            - state
+          properties:
+            orderId:
+              type: "number"
+            state:
+              type: "string"
+              description: "Order Status"
+              enum:
+              - "paid"
+              - "committed"
+              - "ready"
+              - "finished"
+              - "cancelled"
+      security:
+      - api_key: []
+      
+  /order/processPayment:
+    post:
+      tags:
+      - "order"
+      summary: "Callback endpoint for the payment processor"
+      responses:
+        200:
+          description: "successful payment"
+        400:
+          description: "transaction error"
+      parameters:
+      - name: "jwt_token"
+        in: "header"
+        required: false
+        type: "string"
+      - name: "body"
+        in: "body"
+        required: true
+        schema:
+          $ref: "#/definitions/PaymentInfo"
+      security:
+      - api_key: []
+          
+  
+  /user:
+    get:
+      tags:
+        - "user"
+      summary: "Get all users"
+      responses:
+        200:
+          description: "success"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/User"
+      security:
+        - api_key: []
+      
+    post:
+      tags:
+      - "user"
+      summary: "Register a new user"
+      operationId: "createUser"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Created user object"
+        required: true
+        schema:
+          $ref: "#/definitions/User"
+      responses:
+        default:
+          description: "successful operation"
+ 
+  /user/login:
+    post:
+      tags:
+      - "user"
+      summary: "Logs user into the system"
+      description: "Also generates an api key/token for them"
+      operationId: "loginUser"
+      parameters:
+      - name: "username"
+        in: "query"
+        description: "The user name for login"
+        required: true
+        type: "string"
+      - name: "password"
+        in: "query"
+        description: "The password for login in clear text"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: "object"
+            properties:
+              api_key:
+                type: "string"
+              user:
+                $ref: "#/definitions/User"
+                
+        400:
+          description: "Invalid username/password supplied"
+          
+  /user/logout:
+    post:
+      tags:
+      - "user"
+      summary: "Logs out the user based on their api key"
+      description: ""
+      operationId: "logoutUser"
+      responses:
+        default:
+          description: "successful operation"
+      security:
+        - api_key: []
+        
+  /user/{username}:
+    get:
+      tags:
+      - "user"
+      summary: "Get user by user name"
+      description: ""
+      operationId: "getUserByName"
+      parameters:
+      - name: "username"
+        in: "path"
+        description: "Fetches a user by their name. "
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/User"
+        400:
+          description: "Invalid username supplied"
+        404:
+          description: "User not found"
+      security:
+        - api_key: []
+    
+    put:
+      tags:
+      - "user"
+      summary: "Update a user in the system"
+      operationId: "updateUser"
+      parameters:
+      - name: "username"
+        in: "path"
+        description: "name that need to be updated"
+        required: true
+        type: "string"
+      - in: "body"
+        name: "body"
+        description: "Updated user object"
+        required: true
+        schema:
+          $ref: "#/definitions/User"
+      responses:
+        400:
+          description: "Invalid user supplied"
+        404:
+          description: "User not found"
+      security:
+        - api_key: []
+        
+    delete:
+      tags:
+      - "user"
+      summary: "Delete user"
+      operationId: "deleteUser"
+      parameters:
+      - name: "username"
+        in: "path"
+        description: "The name that needs to be deleted"
+        required: true
+        type: "string"
+      responses:
+        400:
+          description: "Invalid username supplied"
+        404:
+          description: "User not found"
+      security:
+        - api_key: []
+  
+  /logs:
+    get:
+      tags:
+      - "logs"
+      summary: "Gets logging information"
+      responses:
+        200:
+          description: "success"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/LogEntry"
+      security:
+      - api_key: []
+        
+securityDefinitions:
+  api_key:
+    type: "apiKey"
+    name: "api_key"
+    in: "header"
+
+definitions:
+  Order:
+    type: "object"
+    properties:
+      id:
+        type: "integer"
+        format: "int64"
+      items:
+        type: array
+        xml:
+          name: items
+          wrapped: true
+        items:
+          "$ref": "#/definitions/OrderItem"
+      userId:
+        type: "integer"
+        format: "int64"
+      eta:
+        type: "integer"
+        format: "int32"
+      state:
+        type: "string"
+        description: "Order Status"
+        enum:
+        - "new"
+        - "paid"
+        - "committed"
+        - "ready"
+        - "finished"
+        - "cancelled"
+    xml:
+      name: "Order"
+  User:
+    type: "object"
+    properties:
+      id:
+        type: "integer"
+        format: "int64"
+      username:
+        type: "string"
+      firstName:
+        type: "string"
+      lastName:
+        type: "string"
+      email:
+        type: "string"
+      password:
+        type: "string"
+      phone:
+        type: "string"
+      userStatus:
+        type: "integer"
+        format: "int32"
+        description: "User Status"
+    xml:
+      name: "User"
+  Coffee:
+    type: "object"
+    required:
+    - "name"
+    - "preparationTime"
+    - "price"
+    properties:
+      id:
+        type: "integer"
+        format: "int64"
+      name:
+        type: "string"
+        example: "Caffe mocha"
+      description:
+        type: "string"
+      photoUrl:
+        type: "string"
+      preparationTime:
+        type: "integer"
+        description: "preparation time in seconds"
+      price:
+        type: "number"
+        description: "price in Euro"
+    xml:
+      name: "Coffee"
+  OrderItem:
+    type: "object"
+    required:
+    - "coffeeId"
+    - "quantity"
+    properties:
+      coffeeId:
+        type: "integer"
+        format: "int64"
+        description: "The unique identifier of the coffee to order"
+      quantity:
+        type: "integer"
+        format: "int64"
+        description: "The quantity to order"
+  PaymentInfo:
+    type: "object"
+    required:
+    - "status"
+    - "userId"
+    - "orderId"
+    - "amount"
+    properties:
+      status:
+        type: "integer"
+        format: "int64"
+        description: "Status describing the result of the transaction"
+      userId:
+        type: "integer"
+        format: "int64"
+        description: "The id of the user who sent the payment"
+      orderId:
+        type: "integer"
+        format: "int64"
+        description: "The id of the order paid"
+      amount:
+        type: "number"
+        description: "Amount of payment"
+  LogEntry:
+    type: "object"
+    properties:
+      message:
+        type: "string"
+      level:
+        type: "string"
+      creationDate:
+        type: "string"
+      
