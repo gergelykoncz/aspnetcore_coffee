@@ -33,6 +33,7 @@ namespace CoffeeShop.WebApi
 
             services.AddScoped(typeof(IRepository<>), typeof(BaseRepository<>));
             services.AddScoped(typeof(ICrudService<>), typeof(CrudService<>));
+            services.AddScoped(typeof(IEtaCalculator), typeof(MapQuestEtaCalculator));
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
         }

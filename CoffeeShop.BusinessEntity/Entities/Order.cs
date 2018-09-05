@@ -23,6 +23,12 @@ namespace CoffeeShop.BusinessEntity.Entities
         [Required]
         public int ETA { get; set; }
 
+        /// <summary>
+        /// Storing total order price so it's not need to be recalculated
+        /// every time. Also allows to change individual coffee prices later
+        /// </summary>
+        public decimal TotalPrice { get; set; }
+
         [ForeignKey("UserId")]
         public virtual User User { get; set; }
 

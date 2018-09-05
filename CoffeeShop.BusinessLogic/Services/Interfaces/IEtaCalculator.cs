@@ -6,6 +6,6 @@ namespace CoffeeShop.BusinessLogic.Services.Interfaces
 {
     public interface IEtaCalculator
     {
-        Task CalculateEta(Coordinates userCoordinate, Coordinates shopCoordinate, TransportationMode transportationMode);
+        Task<int> CalculateEta(Coordinates userCoordinate, Coordinates shopCoordinate, TransportationMode transportationMode);
     }
 }

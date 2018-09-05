@@ -2,7 +2,6 @@
 using CoffeeShop.BusinessEntity.Enums;
 using Microsoft.EntityFrameworkCore;
 
-
 namespace CoffeeShop.DataAccess
 {
     public class CoffeeContext : DbContext
@@ -22,9 +21,6 @@ namespace CoffeeShop.DataAccess
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            //modelBuilder.Entity<BaseEntity>().Property(u => u.CreationDate).HasDefaultValueSql("GETDATE()");
-            //modelBuilder.Entity<BaseEntity>().Property(u => u.IsDeleted).HasDefaultValue(false);
-
             modelBuilder.Entity<Order>().Property(o => o.State).HasDefaultValue(OrderState.New);
 
             modelBuilder.Entity<User>().HasIndex(u => u.Email).IsUnique();
